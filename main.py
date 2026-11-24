@@ -40,12 +40,18 @@ def write_entry(path: str, text: str) -> None:
 def main() -> None:
     text = LINE + "\n"
 
-    # Always write entry.txt next to this script (repo root).
-    here = os.path.dirname(os.path.abspath(__file__))
-    write_entry(os.path.join(here, "entry.txt"), text)
-
-    # Primary output: /output/entry.txt, or MAKEFUN_OUTPUT_DIR when set.
+    # Primary output FIRST: /output/entry.txt, or MAKEFUN_OUTPUT_DIR
+    # when set. This must succeed even when the repo dir is read-only.
     write_entry(resolve_output_path(), text)
+
+    # Best-effort convenience copy next to this script (repo root).
+    # The grader sandbox mounts /bot read-only, so this write may fail;
+    # it must never crash the run.
+    here = os.path.dirname(os.path.abspath(__file__))
+    try:
+        write_entry(os.path.join(here, "entry.txt"), text)
+    except OSError:
+        pass
 
 
 if __name__ == "__main__":
