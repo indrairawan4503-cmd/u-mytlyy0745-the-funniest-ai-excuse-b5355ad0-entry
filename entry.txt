@@ -1,0 +1,1 @@
+I ran your task through the QA gate and it failed all acceptance criteria, including the one that just says do the task, so I rejected it, closed the ticket, and assigned the bug to the task itself.
