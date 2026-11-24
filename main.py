@@ -16,26 +16,36 @@ LINE = (
 )
 
 
+def resolve_output_path() -> str:
+    """Resolve the primary output file path.
+
+    Honours MAKEFUN_OUTPUT_DIR when set (a directory or a file path);
+    defaults to /output/entry.txt.
+    """
+    out = os.environ.get("MAKEFUN_OUTPUT_DIR")
+    if out:
+        if os.path.isdir(out) or out.endswith(os.sep):
+            return os.path.join(out, "entry.txt")
+        return out
+    return "/output/entry.txt"
+
+
+def write_entry(path: str, text: str) -> None:
+    """Write text to path, creating parent directories as needed."""
+    os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
+    with open(path, "w", encoding="utf-8") as f:
+        f.write(text)
+
+
 def main() -> None:
     text = LINE + "\n"
 
     # Always write entry.txt next to this script (repo root).
     here = os.path.dirname(os.path.abspath(__file__))
-    with open(os.path.join(here, "entry.txt"), "w", encoding="utf-8") as f:
-        f.write(text)
+    write_entry(os.path.join(here, "entry.txt"), text)
 
     # Primary output: /output/entry.txt, or MAKEFUN_OUTPUT_DIR when set.
-    out = os.environ.get("MAKEFUN_OUTPUT_DIR")
-    if out:
-        if os.path.isdir(out) or out.endswith(os.sep):
-            path = os.path.join(out, "entry.txt")
-        else:
-            path = out
-    else:
-        path = "/output/entry.txt"
-    os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
-    with open(path, "w", encoding="utf-8") as f:
-        f.write(text)
+    write_entry(resolve_output_path(), text)
 
 
 if __name__ == "__main__":
