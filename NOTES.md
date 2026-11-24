@@ -37,6 +37,39 @@
   (same as before the revision). Repo-root `entry.txt` unchanged, 199 bytes.
   Syntax check OK.
 
+## Grader read-only fix (24 Nov ~10:58 WIB)
+
+- **Why:** sibling entries submitted today (Fortune Cookie Wisdom,
+  Worst AI Advice) were REJECTED by the grader on `run_completes` —
+  their `main.py` wrote repo-root `entry.txt` first, and the grader
+  sandbox mounts the repo read-only at `/bot` (runs
+  `python3 -P -s /bot/main.py` with `MAKEFUN_OUTPUT_DIR=/output`),
+  so the write raised and the run exited 1. This entry had the same
+  bug: repo-root write first, primary output second.
+- **What changed (main.py only):** `main()` now writes the primary
+  output (`/output/entry.txt`, or `MAKEFUN_OUTPUT_DIR` when set)
+  FIRST, then writes the repo-root `entry.txt` only on a best-effort
+  basis — wrapped in `try/except OSError`, failures ignored, so a
+  read-only `/bot` can never crash the run. The excuse `LINE` and the
+  output text are byte-identical.
+- **Re-validation:** `python3 main.py` run twice with different
+  `MAKEFUN_OUTPUT_DIR` temp dirs — both exit 0, byte-identical,
+  SHA-256
+  `2a40152bc4a4036aa4ba264ce61045ccb4188a243de2d6227e89121fdf6757e7`
+  (same as before the fix). Repo-root `entry.txt` unchanged, 199 bytes.
+- **Grader simulation (on a /tmp copy only, real repo untouched):**
+  copied the entry dir to `/tmp`, made the copy read-only
+  (`chmod -R a-w`, `entry.txt` removed from the copy so a repo-root
+  write would be observable), ran as unprivileged user `nobody`
+  `python3 -P -s /tmp/grader-sim-funniest2/main.py` with
+  `MAKEFUN_OUTPUT_DIR=/tmp/funniest-grader-out2` — exit code 0,
+  `/tmp/funniest-grader-out2/entry.txt` written, SHA-256
+  `2a40152bc4a4036aa4ba264ce61045ccb4188a243de2d6227e89121fdf6757e7`,
+  and no `entry.txt` appeared in the read-only copy (repo-root write
+  failed silently as designed).
+- **Status:** fix on disk only — NOT committed, NOT pushed, NOT
+  submitted. Awaiting the submitter to commit/push/submit.
+
 ## Concept
 Variant B lane: the agent ran the task through its own QA gate and the
 TASK failed its own acceptance criteria — even the one that just says
