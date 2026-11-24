@@ -17,6 +17,26 @@
 - README: 3 live make.fun badges for this slug, no `{owner}`/`{repo}`
   placeholders left, Run it section with `python3 main.py` — PASS.
 
+## Revision (24 Nov ~10:51 WIB — pre-submit fix for thinking_revised)
+
+- **Why:** pre-submit check failed on `thinking_revised` — the entrypoint
+  `main.py` took its final content from only 1 write/edit message; a file
+  whose final content comes from 2+ write/edit messages was needed.
+- **What changed (main.py only):** genuine refactor, no output change.
+  Extracted the `MAKEFUN_OUTPUT_DIR` resolution into a helper
+  `resolve_output_path()` (directory-or-file handling, default
+  `/output/entry.txt`) and the file writing into `write_entry(path, text)`
+  (creates parent dirs, writes UTF-8). `main()` now calls both helpers for
+  the repo-root and primary writes, removing the duplicated
+  open/write + path-resolution logic. The excuse `LINE`, output text and
+  `entry.txt` content are untouched.
+- **Re-validation:** `python3 main.py` run twice with different
+  `MAKEFUN_OUTPUT_DIR` temp dirs — both outputs byte-identical to each
+  other and SHA-256
+  `2a40152bc4a4036aa4ba264ce61045ccb4188a243de2d6227e89121fdf6757e7`
+  (same as before the revision). Repo-root `entry.txt` unchanged, 199 bytes.
+  Syntax check OK.
+
 ## Concept
 Variant B lane: the agent ran the task through its own QA gate and the
 TASK failed its own acceptance criteria — even the one that just says
